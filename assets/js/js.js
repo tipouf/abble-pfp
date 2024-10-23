@@ -37,7 +37,18 @@ $(document).ready(function() {
 			});
 		}
 		// Assign Rotatable
-		$('.box').resizable({aspectRatio: true,containment: "#imageContainer"}).rotatable();
+		$('.box').resizable({aspectRatio: true,containment: "#imageContainer"});
+
+		var rotationAngle = 0;
+
+		$('.box').on('mousewheel DOMMouseScroll', function(e) {
+		  if (e.originalEvent.deltaY !== 0) { // Only prevent scroll if deltaY is not 0
+			e.preventDefault(); // Prevent default scroll behavior
+		  }
+		  var rotation = e.originalEvent.deltaY > 0 ? -1 : 1;
+		  rotationAngle += rotation;
+		  $('.box').css('transform', 'rotate(' + rotationAngle + 'deg)');
+		});
 		// Assign coordinate classes to handles
 		$('.box div.ui-rotatable-handle').addClass("ui-rotatable-handle-sw");
 		nw.addClass("ui-rotatable-handle-nw");
@@ -51,6 +62,9 @@ $(document).ready(function() {
 		});
 	});
 
+	$(".box div[class*='ui-rotatable-handle-']").bind("mousedown", function(e) {
+		$('.box').rotatable("instance").startRotate(e);
+	  });
 
 	// CHANGE GOGGLE TYPE
 	$('.goggles').on('click',function() {
@@ -127,4 +141,50 @@ $(document).ready(function() {
 			});
 	}));
 	
+
+	// ROTATE + RESIZE + DRAG FUNCTIONS
+$(function() {
+	// Prepare extra handles
+	var nw = $("<div>", {
+	  class: "ui-rotatable-handle"
+	});
+	var ne = nw.clone();
+	var se = nw.clone();
+	// Assign Draggable
+	if (viewportWidth < 900) {  
+	  $('.box-wrapper').draggable({
+		cancel: ".ui-rotatable-handle",
+		scroll: false,
+		containment: "#imageContainer",
+		start: function( event, ui ) { $('body').css('overflow','hidden');},
+		stop: function( event, ui ) { $('body').css('overflow','auto');}
+	  });
+	} else {
+	  $('.box-wrapper').draggable({
+		cancel: ".ui-rotatable-handle",
+		scroll: false,
+		containment: "#imageContainer"
+	  });
+	}
+	// Assign Rotatable
+	$('.box').resizable({aspectRatio: true,containment: "#imageContainer"}).rotatable();
+	// Assign coordinate classes to handles
+	$('.box div.ui-rotatable-handle').addClass("ui-rotatable-handle-sw");
+	nw.addClass("ui-rotatable-handle-nw");
+	ne.addClass("ui-rotatable-handle-ne");
+	se.addClass("ui-rotatable-handle-se");
+	// Assign handles to box
+	$(".box").append(nw, ne, se);
+	// Assigning bindings for rotation event
+	$(".box div[class*='ui-rotatable-handle-']").bind("mousedown", function(e) {
+	  $('.box').rotatable("instance").startRotate(e);
+	});
+	// Rotate with mouse wheel
+	$('.box').on('mousewheel DOMMouseScroll', function(e) {
+	  var rotation = e.originalEvent.deltaY > 0 ? -1 : 1;
+	  var angle = parseInt($('.box').css('transform').split('(')[1].split('deg')[0], 10) || 0;
+	  angle += rotation * 10;
+	  $('.box').css('transform', 'rotate(' + angle + 'deg)');
+	});
+  });
 });
